@@ -1,0 +1,23 @@
+name: Windows Native CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: runtime/node-version.txt
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: cargo test --locked --manifest-path native/Cargo.toml
+      - run: cargo clippy --locked --manifest-path native/Cargo.toml --all-targets -- -D warnings

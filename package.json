@@ -1,0 +1,18 @@
+{
+  "name": "codex-usage-monitor-windows",
+  "version": "3.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node tests/run-tests.mjs",
+    "test": "node tests/run-tests.mjs",
+    "build": "node scripts/build-installer.mjs",
+    "build:runtime": "node scripts/build-native.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0"
+  }
+}

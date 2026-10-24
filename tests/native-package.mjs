@@ -1,0 +1,53 @@
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import path from "node:path";
+import os from "node:os";
+import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
+
+const source = path.resolve(process.argv[2] || "dist/native/codex-usage-monitor-windows-3.2.0");
+const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "codex-native-package-"));
+const installRoot = path.join(temporary, "install");
+const executable = path.join(source, "CodexUsageMonitor.exe");
+const hash = async file => createHash("sha256").update(await fs.readFile(file)).digest("hex");
+const install = () => spawnSync(executable, ["--install", "--install-root", installRoot, "--quiet"], { windowsHide: true, encoding: "utf8", timeout: 60000 });
+try {
+  const binary = await fs.readFile(executable);
+  const pe = binary.readUInt32LE(0x3c);
+  assert.equal(binary.readUInt32LE(pe), 0x4550);
+  assert.equal(binary.readUInt16LE(pe + 24 + 68), 2, "EXE must use the Windows GUI subsystem");
+  const files = JSON.parse(await fs.readFile(path.join(source, "config/native-package-files.json"), "utf8"));
+  assert.ok(!files.some(file => /\.(ps1|vbs)$/i.test(file)), "Native runtime must not ship deployment scripts");
+  const first = install();
+  assert.equal(first.status, 0, first.stdout + first.stderr);
+  const versions = (await fs.readdir(installRoot)).filter(name => name.includes("-rust-"));
+  assert.equal(versions.length, 1);
+  const installed = path.join(installRoot, versions[0]);
+  for (const relative of files) assert.equal(await hash(path.join(installed, relative)), await hash(path.join(source, relative)), relative);
+  const custom = path.join(installed, "private.local.json");
+  await fs.writeFile(custom, JSON.stringify({ fixture: true }));
+  await fs.writeFile(path.join(installRoot, "CodexUsageMonitor.exe"), "outdated loader fixture");
+  assert.equal(install().status, 0, "Reinstall must be idempotent");
+  assert.equal(await hash(path.join(installRoot, "CodexUsageMonitor.exe")), await hash(executable), "Reinstall must update the stable loader as well as the versioned host");
+  assert.deepEqual(JSON.parse(await fs.readFile(custom, "utf8")), { fixture: true });
+  await fs.appendFile(path.join(installed, "assets/usage-constants.js"), "\ncorrupted-fixture");
+  assert.notEqual(install().status, 0, "Damaged installed files must not be silently activated");
+  const archive = `${source}.zip`;
+  assert.ok((await fs.stat(archive)).size < 64 * 1024 * 1024);
+  const uninstall = spawnSync(executable, ["--uninstall", "--install-root", installRoot, "--quiet"], { windowsHide: true, encoding: "utf8", timeout: 60000 });
+  assert.equal(uninstall.status, 0, uninstall.stdout + uninstall.stderr);
+  for (const relative of files) await assert.rejects(fs.stat(path.join(installed, relative)), { code: "ENOENT" });
+  await assert.rejects(fs.stat(path.join(installRoot, "CodexUsageMonitor.exe")), { code: "ENOENT" });
+  await assert.rejects(fs.stat(path.join(installRoot, "current.json")), { code: "ENOENT" });
+  assert.deepEqual(JSON.parse(await fs.readFile(custom, "utf8")), { fixture: true });
+  const unrelated = path.join(temporary, "unrelated");
+  await fs.mkdir(unrelated);
+  await fs.writeFile(path.join(unrelated, "keep.txt"), "fixture");
+  assert.notEqual(spawnSync(executable, ["--uninstall", "--install-root", unrelated, "--quiet"], { windowsHide: true, timeout: 10000 }).status, 0);
+  assert.equal(await fs.readFile(path.join(unrelated, "keep.txt"), "utf8"), "fixture");
+  console.log("PASS: GUI EXE, script-free package, isolated install/uninstall, stable loader update, hashes, idempotence, user-file preservation and unrelated-directory rejection.");
+} finally {
+  assert.equal(path.dirname(temporary), os.tmpdir());
+  assert.ok(path.basename(temporary).startsWith("codex-native-package-"));
+  await fs.rm(temporary, { recursive: true, force: true });
+}

@@ -1,0 +1,46 @@
+name: Build Native Installer
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: runtime/node-version.txt
+          cache: npm
+      - name: Select Rust toolchain
+        shell: cmd
+        run: rustup default stable-msvc
+      - name: Install Inno Setup
+        shell: cmd
+        run: choco install innosetup --yes --no-progress
+      - name: Install test dependencies
+        shell: cmd
+        run: npm ci
+      - name: Node tests
+        shell: cmd
+        run: npm test
+      - name: Rust tests
+        shell: cmd
+        run: cargo test --locked --manifest-path native/Cargo.toml
+      - name: Rust checks
+        shell: cmd
+        run: cargo clippy --locked --manifest-path native/Cargo.toml --all-targets -- -D warnings
+      - name: Build and verify installer
+        shell: cmd
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-windows-release
+          if-no-files-found: error
+          path: |
+            dist/release/*.exe
+            dist/release/*.zip
+            dist/release/SHA256SUMS.txt
