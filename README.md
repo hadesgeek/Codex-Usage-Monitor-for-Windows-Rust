@@ -4,7 +4,8 @@
 
 > **二次开发声明**：本项目基于 [JiaYang-BUAA/Codex-Desktop-Usage-Monitor-Windows](https://github.com/JiaYang-BUAA/Codex-Desktop-Usage-Monitor-Windows)（MIT License）二次开发，不是从零重写，也不是官方项目，与 OpenAI 没有隶属、赞助或背书关系。感谢原作者的工作。本仓库的改动范围见 [与上游的主要差异](#与上游的主要差异)，完整来源声明见 [NOTICE.md](NOTICE.md)。
 
-![展开面板](docs/images/ScreenShot_2026-10-24_092048_958.png)
+<!-- 图片使用 jsDelivr CDN 绝对地址：GitHub 的相对路径图片会被重定向到 raw.githubusercontent.com，该域名在中国大陆网络无法访问 -->
+![展开面板](https://cdn.jsdelivr.net/gh/hadesgeek/Codex-Usage-Monitor-for-Windows-Rust@main/docs/images/ScreenShot_2026-10-24_092048_958.png)
 
 主图为 v3.2.0 实际运行截图。其余示意图沿用上游项目，其中显示的用量、开关和服务配置不是新安装的默认值。
 
@@ -109,11 +110,11 @@ CodexUsageMonitor.exe --restore-codex-startup
 - 勾选"5小时重置"可在监视栏显示本机时区的重置时刻，例如"5时重置 14:30"。
 - ChatGPT 普通聊天模式不挂载；Codex 任务和 ChatGPT Work 工作模式继续显示。
 
-![折叠监视栏](docs/images/monitor-collapsed.png)
+![折叠监视栏](https://cdn.jsdelivr.net/gh/hadesgeek/Codex-Usage-Monitor-for-Windows-Rust@main/docs/images/monitor-collapsed.png)
 
 极简模式把更多指标压缩进监视栏，较多项自动分成两行：
 
-![极简模式](docs/images/monitor-minimal.png)
+![极简模式](https://cdn.jsdelivr.net/gh/hadesgeek/Codex-Usage-Monitor-for-Windows-Rust@main/docs/images/monitor-minimal.png)
 
 托盘菜单提供：打开 Codex、重新连接监视器、启停登录自启动、打开数据目录、恢复原 Codex 自启动、退出监视器。退出工具不会关闭 Codex。
 
@@ -121,7 +122,7 @@ CodexUsageMonitor.exe --restore-codex-startup
 
 先在设置里打开"API 栏"，再点击对应标题旁的"配置"。
 
-![API 配置界面](docs/images/configure-api-key.png)
+![API 配置界面](https://cdn.jsdelivr.net/gh/hadesgeek/Codex-Usage-Monitor-for-Windows-Rust@main/docs/images/configure-api-key.png)
 
 | 来源 | 需要填写 |
 | --- | --- |
