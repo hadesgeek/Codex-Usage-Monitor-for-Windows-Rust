@@ -37,6 +37,7 @@ npm run build
 2. 按 `VERSION` 创建对应 `v<版本>` 标签，手动创建 Release。
 3. 上传上表三个文件，写明已验证系统、Codex 版本、功能和已知限制。
 4. 在新用户或干净虚拟机中验证发现 Codex、安装后启动、面板、订阅、重装和卸载。已有 Codex 未开放 CDP 时仍需用户正常退出一次。
+5. 可在仓库 Settings → General → Social preview 上传 `docs/images/social-preview.jpg`，用于链接分享卡片。
 
 `.github/workflows/release.yml` 仅支持手动触发，生成可下载的构建产物，不创建 Release、不推送代码。GitHub 托管环境可能需要下载编译依赖；用户安装时不下载运行依赖。
 
